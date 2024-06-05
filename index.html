@@ -37,6 +37,23 @@
             padding: 10px 20px;
             font-size: 1em;
         }
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .control-button {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            font-size: 2em;
+            text-align: center;
+            vertical-align: middle;
+            background-color: #ddd;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -45,6 +62,13 @@
 <div id="message">YAY You Won!</div>
 <div id="gameOver">Game Over</div>
 <button id="restartButton" onclick="restartGame()">Restart</button>
+
+<div class="controls">
+    <div class="control-button" id="left">←</div>
+    <div class="control-button" id="up">↑</div>
+    <div class="control-button" id="down">↓</div>
+    <div class="control-button" id="right">→</div>
+</div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
@@ -80,11 +104,11 @@
         drawObstacles();
     }
 
-    function updatePosition(event) {
+    function updatePosition(direction) {
         let newX = playerX;
         let newY = playerY;
-        
-        switch(event.key) {
+
+        switch(direction) {
             case 'ArrowUp':
                 newY -= speed;
                 break;
@@ -127,7 +151,7 @@
                 y < obstacle.y + obstacle.height &&
                 y + squareSize > obstacle.y) {
                 gameOverMessage.style.display = 'block';
-                document.removeEventListener('keydown', updatePosition);
+                document.removeEventListener('keydown', handleKeyDown);
                 clearInterval(targetMovement);
                 return true;
             }
@@ -141,7 +165,7 @@
             playerY < targetY + squareSize &&
             playerY + squareSize > targetY) {
             message.style.display = 'block';
-            document.removeEventListener('keydown', updatePosition);
+            document.removeEventListener('keydown', handleKeyDown);
             clearInterval(targetMovement);
         }
     }
@@ -184,7 +208,7 @@
     function restartGame() {
         message.style.display = 'none';
         gameOverMessage.style.display = 'none';
-        document.addEventListener('keydown', updatePosition);
+        document.addEventListener('keydown', handleKeyDown);
 
         initializeGame();
         clearInterval(targetMovement);
@@ -196,7 +220,27 @@
         draw();
     }
 
-    document.addEventListener('keydown', updatePosition);
+    function handleKeyDown(event) {
+        updatePosition(event.key);
+    }
+
+    function handleTouch(event) {
+        const direction = event.target.id;
+        const directionMap = {
+            up: 'ArrowUp',
+            down: 'ArrowDown',
+            left: 'ArrowLeft',
+            right: 'ArrowRight'
+        };
+        updatePosition(directionMap[direction]);
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.getElementById('up').addEventListener('touchstart', handleTouch);
+    document.getElementById('down').addEventListener('touchstart', handleTouch);
+    document.getElementById('left').addEventListener('touchstart', handleTouch);
+    document.getElementById('right').addEventListener('touchstart', handleTouch);
+
     initializeGame();
     targetMovement = setInterval(() => {
         moveTarget();
